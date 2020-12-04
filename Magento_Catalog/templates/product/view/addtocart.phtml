@@ -1,0 +1,138 @@
+<?php
+/**
+ * Copyright © 2015 Magento. All rights reserved.
+ * See COPYING.txt for license details.
+ */
+
+// @codingStandardsIgnoreFile
+
+/** @var $block \Magento\Catalog\Block\Product\View */
+?>
+<?php  $objectManager = \Magento\Framework\App\ObjectManager::getInstance();
+       $config = $objectManager->get('Magento\Framework\App\Config\ScopeConfigInterface');
+       $cartHelper = $this->helper('Magento\Checkout\Helper\Cart'); 
+       $priceHelper = $this->helper('Magento\Framework\Pricing\Helper\Data');
+?>
+<?php $_product = $block->getProduct(); ?>
+<?php $buttonTitle = __('Add to Cart'); ?>
+<?php if ($_product->isSaleable()): ?>
+<div class="row">
+    <div class="col-md-12 col-sm-12 col-xs-12">
+        <div class="pull-right">
+            zzgl. <a href="<?php echo $this->helper('Magento\Cms\Helper\Page')->getPageUrl(33)?>">shipping</a>
+            <span>
+                <?php
+                $countryId = $cartHelper->getQuote()->getShippingAddress()->getCountryId() ?: $config->getValue('shipping/origin/country_id');
+                $address = $cartHelper->getCart()->getQuote()->getShippingAddress();
+                $address->setCountryId($countryId);
+                $cartHelper->getCart()->getQuote()->addProduct($_product);
+                $cartHelper->getCart()->getQuote()->collectTotals();
+                $address->setCollectShippingRates(true)
+                        ->collectShippingRates();
+                $shipping = $address->getShippingRatesCollection()->getData(); 
+                foreach($shipping as $rates){
+                    if($rates["code"]=="freeshipping_freeshipping"){
+                        continue;
+                    }
+                    echo $priceHelper->currency($rates['price'],true,false);
+                break;
+                }
+                $cartHelper->getCart()->removeItem($_product);
+                $cartHelper->getCart()->truncate();
+                 ?>
+            </span>
+        </div>
+    </div>
+</div>
+<div class="box-tocart">
+    <div class="fieldset">
+        <?php if ($block->shouldRenderQuantity()): ?>
+        <div class="field qty">
+            <label class="label" for="qty"><span><?php /* @escapeNotVerified */ echo __('Qty') ?></span></label>
+            <div class="control">
+            	<div class="qty-minus"> <a class="btn-qty minus" href="#">-</a></div>
+		        <div class="qty-input">
+                	<input type="number"
+		               name="qty"
+		               id="qty"
+		               maxlength="12"
+		               value="<?php /* @escapeNotVerified */ echo $block->getProductDefaultQty() * 1 ?>"
+		               title="<?php /* @escapeNotVerified */ echo __('Qty') ?>" class="input-text qty"
+		               data-validate="<?php echo $block->escapeHtml(json_encode($block->getQuantityValidators())) ?>"
+		               />
+                </div>
+		        <div class="qty-plus"> <a class="btn-qty plus" href="#">+</a></div>
+            </div>
+        </div>
+        <div class="actions">
+            <button type="submit"
+                    title="<?php /* @escapeNotVerified */ echo $buttonTitle ?>"
+                    class="action primary tocart"
+                    id="product-addtocart-button">
+                <span><?php /* @escapeNotVerified */ echo $buttonTitle ?></span>
+            </button>
+            <?php echo $block->getChildHtml('', true) ?>
+        </div>
+        <script type="text/javascript">
+		require(['jquery','domReady!'],function($){
+            $(".qty-minus").hide();
+			$(".btn-qty").click(function (event) {
+				var $button = $(this);
+				var oldValue = $button.closest('.control').find("input#qty").val();
+				var defaultValue = <?php /* @escapeNotVerified */ echo $block->getProductDefaultQty() * 1 ?>;
+				if ($button.hasClass('plus')) {
+					var newVal = parseFloat(oldValue) + 1;
+                    $(".qty-minus").show("fast","linear");
+				} else {
+					if (oldValue > defaultValue) {
+					    var newVal = parseFloat(oldValue) - 1;
+					} else {
+                        $(".qty-minus").hide("fast","linear");
+					    newVal = defaultValue;
+					}
+				}
+				$button.closest('.control').find("input#qty").val(newVal);
+				event.preventDefault();
+			});
+
+		});
+        </script>
+        <?php endif; ?>
+    </div>
+</div>
+<?php endif; ?>
+<?php if ($block->isRedirectToCartEnabled()) : ?>
+<script type="text/x-magento-init">
+    {
+        "#product_addtocart_form": {
+            "Magento_Catalog/product/view/validation": {
+                "radioCheckboxClosest": ".nested"
+            }
+        }
+    }
+</script>
+<?php else : ?>
+<script>
+    require([
+        'jquery',
+        'mage/mage',
+        'Magento_Catalog/product/view/validation',
+        'Magento_Catalog/js/catalog-add-to-cart'
+    ], function ($) {
+        'use strict';
+
+        $('[id="product_addtocart_form"]').mage('validation', {
+            radioCheckboxClosest: '.nested',
+            submitHandler: function (form) {
+                var widget = $(form).catalogAddToCart({
+                    bindSubmit: false
+                });
+
+                widget.catalogAddToCart('submitForm', $(form));
+
+                return false;
+            }
+        });
+    });
+</script>
+<?php endif; ?>
