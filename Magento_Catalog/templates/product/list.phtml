@@ -104,7 +104,7 @@ $pos = $block->getPositioned();
                                     <div class="col-md-12 col-sm-12 col-xs-12">
                                         <div class="pull-right">
                                             zzgl. <a
-                                                href="<?php echo $this->helper('Magento\Cms\Helper\Page')->getPageUrl(33)?>">shipping</a>
+                                                href="<?php echo $this->helper('Magento\Cms\Helper\Page')->getPageUrl(33)?>">Versandkosten</a>
                                             <span>
                                                 <?php
                                                     $countryId = $cartHelper->getQuote()->getShippingAddress()->getCountryId() ?: $config->getValue('shipping/origin/country_id');
@@ -114,7 +114,7 @@ $pos = $block->getPositioned();
                                                     $cartHelper->getCart()->getQuote()->collectTotals();
                                                     $address->setCollectShippingRates(true)
                                                             ->collectShippingRates();
-                                                    $shipping = $address->getShippingRatesCollection()->getData(); 
+                                                    $shipping = $address->getShippingRatesCollection()->getData();
                                                     foreach($shipping as $rates){
                                                         if($rates["code"]=="freeshipping_freeshipping"){
                                                             continue;
