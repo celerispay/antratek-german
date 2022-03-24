@@ -76,11 +76,11 @@ $pos = $block->getPositioned();
                         </a>
                     </strong>
                     <?=$block->getReviewsSummaryHtml($_product, $templateType)?>
+                    <?php echo $delivery->getDeliveryHtml($_product->getId()); ?>
                     <?=/* @escapeNotVerified */$block->getProductPrice($_product)?>
                     <?=$block->getProductDetailsHtml($_product)?>
 
                     <div class="product-item-inner">
-                        <?php echo $delivery->getDeliveryHtml($_product->getId()); ?>
                         <div class="product actions product-item-actions"
                             <?=strpos($pos, $viewMode . '-actions') ? $position : ''?>>
                             <div class="actions-primary" <?=strpos($pos, $viewMode . '-primary') ? $position : ''?>>
